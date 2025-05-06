@@ -2,7 +2,7 @@
 
 # API data importer v3
 ## Laravel-приложения для импорта API-данных с поддержкой аккаунтов и токенов (Сервер)
-**(v1 – https://github.com/Constantine1995/data-importer)**<br><br>
+**(v1 – https://github.com/Constantine1995/data-importer-v1)**<br><br>
 **(v2 – https://github.com/Constantine1995/data-importer-v2)**<br><br>
 
 #### Реализован импорт данных:
