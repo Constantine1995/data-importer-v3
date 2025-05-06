@@ -1,0 +1,92 @@
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./src:/var/www/
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    ports:
+      - 8082:80
+    depends_on:
+      - php
+    container_name: api-nginx
+
+  php:
+    build:
+      context: docker/php
+    volumes:
+      - ./src:/var/www
+    working_dir: /var/www
+    env_file:
+      - ./src/.env
+    depends_on:
+      - mysql
+    container_name: api-php
+
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootsecret
+      - MYSQL_DATABASE=laravel
+    ports:
+      - 3037:3306
+    container_name: api-mysql
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 8083:80
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+    depends_on:
+      - mysql
+    container_name: api-phpmyadmin
+
+  cron:
+    build: docker/cron
+    volumes:
+      - ./src:/var/www
+      - ./log/cron:/var/log/cron
+    working_dir: /var/www
+    depends_on:
+      - php
+      - mysql
+    container_name: api-cron
+
+  queue:
+    build: docker/php
+    volumes:
+      - ./src:/var/www
+    working_dir: /var/www
+    env_file:
+      - ./src/.env
+    depends_on:
+      - mysql
+      - migrate
+    container_name: api-queue
+    command: >
+      /bin/sh -c "
+      echo \"Waiting for MySQL...\";
+      /usr/local/bin/wait-for-it.sh mysql:3306 --timeout=120 -- echo \"MySQL is up\";
+      echo \"Checking jobs table...\";
+      while ! mysql -h mysql -u root -prootsecret laravel -e 'SELECT 1 FROM jobs' 2>/dev/null; do
+      echo \"Waiting for jobs table...\";
+      sleep 2;
+      done;
+      echo \"Jobs table is ready, starting queue worker...\";
+      php artisan queue:work --sleep=3 --tries=3 --timeout=60
+      "
+
+  migrate:
+    build: docker/php
+    volumes:
+       - ./src:/var/www
+    working_dir: /var/www
+    env_file:
+      - ./src/.env
+    depends_on:
+      - mysql
+    container_name: api-migrate
+    command: /usr/local/bin/wait-for-it.sh mysql:3306 --timeout=60 -- php artisan migrate --force

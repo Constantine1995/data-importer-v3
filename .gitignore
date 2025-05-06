@@ -1,0 +1,37 @@
+# Laravel
+/bootstrap/cache/*
+/vendor/
+/storage/framework/*
+/storage/logs/*
+/storage/app/*
+!/storage/app/public
+.env
+.env.backup
+.env.production
+
+# PHP Unit
+/.phpunit.cache
+.phpunit.result.cache
+
+# Node.js
+/node_modules
+/public/build
+/public/hot
+/public/storage
+npm-debug.log
+yarn-error.log
+
+# IDE и редакторы
+/.idea
+/.vscode
+/.fleet
+/.zed
+/.nova
+.phpactor.json
+
+# Docker
+/docker/mysql/*
+/log/cron/*
+
+# Общие временные файлы
+*.log
