@@ -22,7 +22,7 @@
 3. Добавить ваш `API_KEY` в `.env`
 4. Выполнить команду: `docker-compose up --build`
 5. Выполнить основные команды для создания записей в таблицах (описаны ниже)
-6. Для тестирования `Scheduler`, можно использовать закомментированные команды в `routes/console`
+6. Для тестирования `Scheduler`, можно использовать команды вручную
 
 ### Доступ к БД:
    **Хост/IP:** ip_address <br>
@@ -77,9 +77,16 @@ docker exec -it api-queue php artisan api-token:create id:1 api_service:Orders t
 ### Запуск команд вручную:
 **Импорт данных из API сервисов в локальную БД:**<br>
 ```bash
-docker exec -it api-queue php artisan api:sync --date-from=2025-04-01 --date-to=2025-05-01
+docker exec -it api-queue php artisan api:sync --date-from=2025-05-01 --date-to=2025-05-01
 ```
+
 **Синхронизация данных из локальной БД сервисов с аккаунтами:**<br>
+Синхронизировать всё:
+```bash
+docker exec -it api-queue php artisan sync:all --date-from=2025-04-01 --date-to=2025-05-01
+```
+
+Синхронизировать по отдельности:
 ```bash
 docker exec -it api-queue php artisan replicate:orders --date-from=2025-04-01 --date-to=2025-05-01
 docker exec -it api-queue php artisan replicate:sales --date-from=2025-04-01 --date-to=2025-05-01
@@ -121,6 +128,7 @@ curl --location 'http://ip_address:8082/api/orders' \
 - `token_types`
 
 ### Command class:
+- `SyncAllData` – Команда Laravel для синхронизации данных из внешнего сервера по API с аккаунтами. Выполняет запуск синхронизации данных за указанный период **(--date-from, --date-to)**
 - `SyncApiData` – Команда Laravel для синхронизации данных с API. Выполняет запуск синхронизации данных за указанный период **(--date-from, --date-to)**
 - `ReplicateIncomesToAccounts` – Добавляет данные из `incomes` в `income_accounts` для всех аккаунтов
 - `ReplicateOrdersToAccounts` – Добавляет данные из `orders` в `order_accounts` для всех аккаунтов
