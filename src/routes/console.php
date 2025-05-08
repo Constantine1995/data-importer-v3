@@ -8,4 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('sync:all')->twiceDaily(6, 18);
+Schedule::command('sync:all')->twiceDaily(7, 19);
