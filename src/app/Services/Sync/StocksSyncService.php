@@ -38,7 +38,7 @@ class StocksSyncService extends LogSyncService
 
         DB::transaction(function () use ($params) {
             // Clear the stocks table before inserting new data
-            Stock::whereBetween('date', [$params['dateFrom'], $params['dateFrom']])->delete();
+            Stock::whereBetween('date', [$params['dateFrom'], $params['dateFrom']])->delete(); // The table doesn't have any unique composite fields, so I use full delete by date and full insert to ensure data integrity
         });
 
         // Iterate through paginated API data

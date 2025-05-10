@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Income extends Model
 {
@@ -12,7 +13,7 @@ class Income extends Model
         'date_close' => 'date',
     ];
 
-    public function accounts()
+    public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class, 'income_accounts');
     }

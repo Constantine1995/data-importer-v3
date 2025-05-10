@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IncomeAccount extends Model
 {
@@ -11,12 +12,12 @@ class IncomeAccount extends Model
         'income_id',
     ];
 
-    public function income()
+    public function income(): BelongsTo
     {
         return $this->belongsTo(Income::class);
     }
 
-    public function account()
+    public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
     }

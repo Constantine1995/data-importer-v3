@@ -40,7 +40,7 @@ class SalesSyncService extends LogSyncService
 
         DB::transaction(function () use ($params) {
             // Clear the sales table before inserting new data
-            Sale::whereBetween('date', [$params['dateFrom'], $params['dateTo']])->delete();
+            Sale::whereBetween('date', [$params['dateFrom'], $params['dateTo']])->delete(); // The table doesn't have any unique composite fields, so I use full delete by date and full insert to ensure data integrity
         });
 
         // Iterate through paginated API data

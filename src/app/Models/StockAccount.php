@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockAccount extends Model
 {
@@ -11,12 +12,12 @@ class StockAccount extends Model
         'stock_id',
     ];
 
-    public function stock()
+    public function stock(): BelongsTo
     {
         return $this->belongsTo(Stock::class);
     }
 
-    public function account()
+    public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
     }

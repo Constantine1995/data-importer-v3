@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Sale extends Model
 {
@@ -14,7 +15,7 @@ class Sale extends Model
         'is_storno' => 'boolean',
     ];
 
-    public function accounts()
+    public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class, 'sale_accounts');
     }

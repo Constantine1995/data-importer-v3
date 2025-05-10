@@ -1,28 +1,19 @@
 <p align="center"><a href="#" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-# API data importer v3
-## Laravel-приложения для импорта API-данных с поддержкой аккаунтов и токенов (Сервер)
-**(v1 – https://github.com/Constantine1995/data-importer-v1)**<br><br>
-**(v2 – https://github.com/Constantine1995/data-importer-v2)**<br><br>
-
-#### Реализован импорт данных:
-- Продажи
-- Заказы
-- Склады
-- Доходы
+## Laravel-приложение для интеграции с API: импорт данных в БД с поддержкой мультиаккаунтов
 
 ## Стек:
-- `php 8.2`
+- `PHP 8.2`
 - `Laravel 12`
-- `Docker`
+- `MySQL 8.0`
+- `Docker / Docker Compose v2`
 
 ## Установка:
 1. Склонировать репозиторий: `git clone https://github.com/Constantine1995/data-importer-v3.git`
 2. Скопировать `.env.example` в `.env`: `cp .env.example .env`
 3. Добавить ваш `API_KEY` в `.env`
 4. Выполнить команду: `docker-compose up --build`
-5. Выполнить основные команды для создания записей в таблицах (описаны ниже)
-6. Для тестирования `Scheduler`, можно использовать команды вручную
+5. Выполнить основные CLI команды (описаны ниже) или выполнить `docker exec api-queue php artisan db:seed`
 
 ### Доступ к БД:
    **Хост/IP:** ip_address <br>
@@ -31,7 +22,7 @@
    **Пользователь:** root<br>
    **Пароль:** rootsecret<br>
 
-### Основные команды:
+### Основные CLI команды:
 **Создать Компанию:**<br>
 ```bash
 docker exec -it api-queue php artisan company:create name:"CompanyName"
@@ -86,7 +77,7 @@ docker exec -it api-queue php artisan api:sync --date-from=2025-05-01 --date-to=
 docker exec -it api-queue php artisan sync:all --date-from=2025-04-01 --date-to=2025-05-01
 ```
 
-Синхронизировать по отдельности:
+Синхронизировать данные из локальной БД сервисов с аккаунтами по отдельности:
 ```bash
 docker exec -it api-queue php artisan replicate:orders --date-from=2025-04-01 --date-to=2025-05-01
 docker exec -it api-queue php artisan replicate:sales --date-from=2025-04-01 --date-to=2025-05-01
@@ -100,8 +91,8 @@ docker exec -it api-queue php artisan replicate:stocks
 - `http://ip_address:8082/api/incomes`
 - `http://ip_address:8082/api/stocks`
 
-**Пример запроса**
-Для получения списка заказов используйте эндпоинт `/api/orders`. Запрос требует авторизации через Bearer-токен или (API-KEY, Login:Password Basic Auth) и передачи параметров в формате формы.
+**Пример запроса**<br>
+Для получения списка заказов используйте эндпоинт `/api/orders`. Запрос требует авторизации через `Bearer-токен` или (`API-KEY, Login:Password Basic Auth`) и передачи параметров в формате формы.
 ```bash
 curl --location 'http://ip_address:8082/api/orders' \
   --header 'Accept: application/json' \
@@ -110,6 +101,28 @@ curl --location 'http://ip_address:8082/api/orders' \
   --form 'dateTo="2025-05-01"' \
   --form 'limit="1"'
  ```
+
+### Command class:
+- `SyncAllData` – Команда Laravel для синхронизации данных из внешнего сервера по API с аккаунтами. Выполняет запуск синхронизации данных за указанный период **(--date-from, --date-to)**
+- `SyncApiData` – Команда Laravel для синхронизации данных с API. Выполняет запуск синхронизации данных за указанный период **(--date-from, --date-to)**
+- `ReplicateIncomesToAccounts` – Добавляет данные из `incomes` в `income_accounts` для всех аккаунтов
+- `ReplicateOrdersToAccounts` – Добавляет данные из `orders` в `order_accounts` для всех аккаунтов
+- `ReplicateSalesToAccounts` – Добавляет данные из `sales` в `sale_accounts` для всех аккаунтов
+- `ReplicateStocksToAccounts` – Добавляет данные из `stocks` в `stock_accounts` для всех аккаунтов
+- `AccountCreate` – Создает новый аккаунт для компании
+- `CompanyCreate` – Создает компанию
+- `ApiServiceCreate` – Создает новый API-сервис (для аккаунтов)
+- `ApiServiceTokenTypeCreate` – Связь API-сервиса с типом токена
+- `ApiTokenCreate` – Создает API-токен для аккаунтов
+- `TokenTypeCreate` – Создает тип токенов
+
+### Services:
+- `ApiService` – Сервис для работы с API. Отвечает за выполнение HTTP-запросов к внешнему API с помощью **GuzzleHttp**
+- `IncomesSyncService` – Сервис для синхронизации данных о `доходах` с API
+- `OrdersSyncService` – Сервис для синхронизации данных о `заказах` с API
+- `SalesSyncService` – Сервис для синхронизации данных о `продажах` с API
+- `StocksSyncService` – Сервис для синхронизации данных о `складах` с API
+- `LogSyncService` – Абстрактный базовый класс для логирования операций синхронизации.
 
 ### Tables:
 - `incomes`
@@ -126,33 +139,6 @@ curl --location 'http://ip_address:8082/api/orders' \
 - `api_services`
 - `api_tokens`
 - `token_types`
-
-### Command class:
-- `SyncAllData` – Команда Laravel для синхронизации данных из внешнего сервера по API с аккаунтами. Выполняет запуск синхронизации данных за указанный период **(--date-from, --date-to)**
-- `SyncApiData` – Команда Laravel для синхронизации данных с API. Выполняет запуск синхронизации данных за указанный период **(--date-from, --date-to)**
-- `ReplicateIncomesToAccounts` – Добавляет данные из `incomes` в `income_accounts` для всех аккаунтов
-- `ReplicateOrdersToAccounts` – Добавляет данные из `orders` в `order_accounts` для всех аккаунтов
-- `ReplicateSalesToAccounts` – Добавляет данные из `sales` в `sale_accounts` для всех аккаунтов
-- `ReplicateStocksToAccounts` – Добавляет данные из `stocks` в `stock_accounts` для всех аккаунтов
-- `AccountCreate` – Создает новый аккаунт для компании
-- `CompanyCreate` – Создает компанию
-- `ApiServiceCreate` – Создает новый API-сервис (для аккаунтов)
-- `ApiServiceTokenTypeCreate` – Связь API-сервиса с типом токена
-- `ApiTokenCreate` – Создает API-токен для аккаунтов
-- `TokenTypeCreate` – Создает тип токенов
-
-### Token type:
-- `bearer`
-- `api-key`
-- `login-password`
-
-### Services:
-- `ApiService` – Сервис для работы с API. Отвечает за выполнение HTTP-запросов к внешнему API с помощью **GuzzleHttp**
-- `IncomesSyncService` – Сервис для синхронизации данных о `доходах` с API
-- `OrdersSyncService` – Сервис для синхронизации данных о `заказах` с API
-- `SalesSyncService` – Сервис для синхронизации данных о `продажах` с API
-- `StocksSyncService` – Сервис для синхронизации данных о `складах` с API
-- `LogSyncService` – Абстрактный базовый класс для логирования операций синхронизации.
 
 ### Controllers:
 - `IncomeApiController` – Выводит JSON ответ с данными о `доходах` с помощью токена, тип токена регулируется в таблице `api-service-token-type`

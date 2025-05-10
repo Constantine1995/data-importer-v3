@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Stock extends Model
 {
@@ -13,7 +14,7 @@ class Stock extends Model
         'is_realization' => 'boolean',
     ];
 
-    public function accounts()
+    public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class, 'stock_accounts');
     }
