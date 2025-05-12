@@ -27,10 +27,21 @@ class IncomesSyncService extends LogSyncService
      */
     public function sync(Carbon $dateFrom, Carbon $dateTo): void
     {
+
+        $originalDateTo = $dateTo->format('Y-m-d');
+
+        // For API add +1 day
+        $apiDateTo = $dateTo->copy()->addDay()->format('Y-m-d');
+
+        Log::info("Starting incomes sync", [
+            'dateFrom' => $dateFrom->format('Y-m-d'),
+            'dateTo' => $originalDateTo,
+        ]);
+
         // Prepare API request parameters
         $params = [
             'dateFrom' => $dateFrom->format('Y-m-d'),
-            'dateTo' => $dateTo->format('Y-m-d'),
+            'dateTo' => $apiDateTo,
         ];
 
         // Track the number of processed records
@@ -39,9 +50,9 @@ class IncomesSyncService extends LogSyncService
         // Record time for logging
         $startTime = microtime(true);
 
-        DB::transaction(function () use ($params) {
+        DB::transaction(function () use ($params, $dateFrom, $dateTo) {
             // Clear the incomes table before inserting new data
-            Income::whereBetween('date', [$params['dateFrom'], $params['dateTo']])->delete(); // The table doesn't have any unique composite fields, so I use full delete by date and full insert to ensure data integrity
+            Income::whereBetween('date', [$dateFrom, $dateTo])->delete(); // The table doesn't have any unique composite fields, so I use full delete by date and full insert to ensure data integrity
         });
 
         // Iterate through paginated API data

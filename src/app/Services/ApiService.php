@@ -121,10 +121,6 @@ class ApiService
             // Initialize pagination on first iteration
             if ($page === 1) {
                 $totalPages = $lastPage ?? 1; // Default to single page if last_page not provided
-                Log::info("Starting paginated fetch for {$endpoint}", [
-                    'total_pages' => $totalPages,
-                    'params' => $params
-                ]);
 
                 // If API doesn't provide pagination info, yield single page and exit
                 if ($lastPage === null) {
